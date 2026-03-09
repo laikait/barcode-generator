@@ -328,4 +328,4 @@ composer install
 
 ## License
 
-MIT © Laika
+MIT © Laika IT
