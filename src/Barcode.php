@@ -135,6 +135,49 @@ class Barcode
     }
 
     // -------------------------------------------------------------------------
+    // Save to file
+    // -------------------------------------------------------------------------
+
+    /**
+     * Render and save the barcode to a file.
+     *
+     * The format is inferred from the file extension:
+     *   .svg  → SVG string
+     *   .png  → PNG binary (requires GD)
+     *
+     * @param  string  $path     Destination file path (e.g. '/var/www/barcodes/code128.svg')
+     * @param  array   $options  Render options merged on top of instance options.
+     * @return string            The resolved absolute path.
+     *
+     * @throws BarcodeException  If the extension is unsupported or the directory is not writable.
+     */
+    public function save(string $path, array $options = []): string
+    {
+        $ext = strtolower(pathinfo($path, PATHINFO_EXTENSION));
+
+        $content = match ($ext) {
+            'svg'  => $this->svg($options),
+            'png'  => $this->png($options),
+            default => throw new BarcodeException(
+                "Unsupported file extension \".{$ext}\". Use .svg or .png."
+            ),
+        };
+
+        $dir = dirname($path);
+        if (!is_dir($dir)) {
+            if (!mkdir($dir, 0755, true)) {
+                throw new BarcodeException("Could not create directory: {$dir}");
+            }
+        }
+
+        if (file_put_contents($path, $content) === false) {
+            throw new BarcodeException("Could not write barcode file: {$path}");
+        }
+
+        return realpath($path) ?: $path;
+    }
+
+    // -------------------------------------------------------------------------
     // Helpers
     // -------------------------------------------------------------------------
 

@@ -73,8 +73,8 @@ final class QrEncoder
      * ordered from bit 14 (MSB) down to bit 0 (LSB).
      */
     private const FORMAT_POS1 = [
-        [8, 0], [8, 1], [8, 2], [8, 3], [8, 4], [8, 5], [8, 7], [8, 8],
-        [7, 8], [5, 8], [4, 8], [3, 8], [2, 8], [1, 8], [0, 8],
+        [0, 8], [1, 8], [2, 8], [3, 8], [4, 8], [5, 8], [7, 8], [8, 8],
+        [8, 7], [8, 5], [8, 4], [8, 3], [8, 2], [8, 1], [8, 0],
     ];
 
     // =========================================================================
@@ -89,7 +89,7 @@ final class QrEncoder
      *
      * @throws InvalidDataException
      */
-    public function encode(string $data, string $ecLevel = 'M'): array
+    public function encode(string $data, string $ecLevel = 'H'): array
     {
         $ec = strtoupper(trim($ecLevel));
 
@@ -486,7 +486,7 @@ final class QrEncoder
 
         // Copy 2 near bottom-left finder: col 8, bits 8→14 placed at rows size-1 → size-7
         for ($i = 0; $i < 7; $i++) {
-            $m[$size - 7 + $i][8] = ($format >> (8 + $i)) & 1;
+            $m[$size - 1 - $i][8] = ($format >> (8 + $i)) & 1;
         }
     }
 

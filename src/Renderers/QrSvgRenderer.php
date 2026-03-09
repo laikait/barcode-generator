@@ -26,7 +26,7 @@ namespace Laika\Barcode\Renderers;
 class QrSvgRenderer
 {
     private const DEFAULTS = [
-        'module_size'       => 4,
+        'module_size'       => 8,
         'margin'            => 4,
         'color'             => '#000000',
         'bg'                => '#ffffff',
