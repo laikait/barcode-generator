@@ -6,8 +6,12 @@
     "license": "MIT",
     "authors": [
         {
-            "name": "Laika",
-            "email": "hello@laika.dev"
+            "name": "Laika IT",
+            "email": "strblackhawk@gmail.com"
+        },
+        {
+            "name": "Showket Ahmed",
+            "email": "riyadhtayf@gmail.com"
         }
     ],
     "require": {
