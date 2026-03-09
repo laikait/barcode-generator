@@ -1,0 +1,6 @@
+/vendor/
+/examples/*.svg
+/examples/*.png
+composer.lock
+.phpunit.cache/
+.phpunit.result.cache
