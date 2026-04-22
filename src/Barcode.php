@@ -1,19 +1,24 @@
 <?php
+/**
+ * Laika Barcode/QR Code Generator
+ * Author: Showket Ahmed
+ * Email: strblackhawk@gmail.com
+ */
 
 declare(strict_types=1);
 
 namespace Laika\Barcode;
 
-use Laika\Barcode\Contracts\BarcodeInterface;
-use Laika\Barcode\Contracts\RendererInterface;
+use Laika\Barcode\Interfaces\RendererInterface;
+use Laika\Barcode\Interfaces\BarcodeInterface;
+use Laika\Barcode\Exceptions\BarcodeException;
 use Laika\Barcode\Encoders\Code128Encoder;
 use Laika\Barcode\Encoders\Code39Encoder;
 use Laika\Barcode\Encoders\Ean13Encoder;
-use Laika\Barcode\Encoders\Ean8Encoder;
-use Laika\Barcode\Encoders\UpcaEncoder;
-use Laika\Barcode\Exceptions\BarcodeException;
 use Laika\Barcode\Renderers\PngRenderer;
 use Laika\Barcode\Renderers\SvgRenderer;
+use Laika\Barcode\Encoders\Ean8Encoder;
+use Laika\Barcode\Encoders\UpcaEncoder;
 
 /**
  * Main entry point for the Laika Barcode library.
@@ -112,16 +117,43 @@ class Barcode
     // Renderers
     // -------------------------------------------------------------------------
 
-    /** Render as SVG string. */
+    /**
+     * Render as raw PNG bytes
+     * @param array<string,mixed> $options
+     */
     public function svg(array $options = []): string
     {
         return $this->renderWith(new SvgRenderer(), $options);
     }
 
-    /** Render as raw PNG bytes. */
+    /**
+     * Render as raw PNG bytes
+     * @param array<string, mixed> $options
+     * @return string
+     */
     public function png(array $options = []): string
     {
         return $this->renderWith(new PngRenderer(), $options);
+    }
+
+    /**
+     * Render as a PNG base64 data URI.
+     * @param array<string, mixed> $options
+     * @return string e.g. data:image/svg+xml;base64,...
+     */
+    public function pngBase64(array $options = []): string
+    {
+        return 'data:image/png;base64,' . base64_encode($this->png($options));
+    }
+
+    /**
+     * Render as a SVG base64 data URI.
+     * @param array<string, mixed> $options
+     * @return string e.g. data:image/svg+xml;base64,...
+     */
+    public function svgBase64(array $options = []): string
+    {
+        return 'data:image/svg+xml;base64,' . base64_encode($this->svg($options));
     }
 
     /** Use a custom renderer. */

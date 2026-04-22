@@ -1,4 +1,9 @@
 <?php
+/**
+ * Laika Barcode/QR Code Generator
+ * Author: Showket Ahmed
+ * Email: strblackhawk@gmail.com
+ */
 
 declare(strict_types=1);
 

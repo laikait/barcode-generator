@@ -1,14 +1,19 @@
 <?php
+/**
+ * Laika Barcode/QR Code Generator
+ * Author: Showket Ahmed
+ * Email: strblackhawk@gmail.com
+ */
 
 declare(strict_types=1);
 
 namespace Laika\Barcode;
 
-use Laika\Barcode\Encoders\QrEncoder;
-use Laika\Barcode\Exceptions\BarcodeException;
 use Laika\Barcode\Exceptions\InvalidDataException;
+use Laika\Barcode\Exceptions\BarcodeException;
 use Laika\Barcode\Renderers\QrPngRenderer;
 use Laika\Barcode\Renderers\QrSvgRenderer;
+use Laika\Barcode\Encoders\QrEncoder;
 
 /**
  * Fluent QR Code generator.
@@ -129,8 +134,8 @@ class QrCode
 
     /**
      * Render the QR code as raw PNG bytes (requires GD extension).
-     *
-     * @param  array  $options  Merged on top of instance options.
+     * @param array $options  Merged on top of instance options.
+     * @return string
      */
     public function png(array $options = []): string
     {
@@ -138,6 +143,26 @@ class QrCode
             $this->matrix(),
             array_merge($this->options, $options)
         );
+    }
+
+    /**
+     * Render as a PNG base64 data URI.
+     * @param array $options  Merged on top of instance options.
+     * @return string e.g. data:image/svg+xml;base64,...
+     */
+    public function pngBase64(array $options = []): string
+    {
+        return 'data:image/png;base64,' . base64_encode($this->png($options));
+    }
+
+    /**
+     * Render as a SVG base64 data URI.
+     * @param array $options  Merged on top of instance options.
+     * @return string e.g. data:image/svg+xml;base64,...
+     */
+    public function svgBase64(array $options = []): string
+    {
+        return 'data:image/svg+xml;base64,' . base64_encode($this->svg($options));
     }
 
     /**

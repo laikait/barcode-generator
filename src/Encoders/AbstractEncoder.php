@@ -1,10 +1,15 @@
 <?php
+/**
+ * Laika Barcode/QR Code Generator
+ * Author: Showket Ahmed
+ * Email: strblackhawk@gmail.com
+ */
 
 declare(strict_types=1);
 
 namespace Laika\Barcode\Encoders;
 
-use Laika\Barcode\Contracts\BarcodeInterface;
+use Laika\Barcode\Interfaces\BarcodeInterface;
 use Laika\Barcode\Exceptions\InvalidDataException;
 
 abstract class AbstractEncoder implements BarcodeInterface
