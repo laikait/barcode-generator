@@ -117,16 +117,43 @@ class Barcode
     // Renderers
     // -------------------------------------------------------------------------
 
-    /** Render as SVG string. */
+    /**
+     * Render as raw PNG bytes
+     * @param array<string,mixed> $options
+     */
     public function svg(array $options = []): string
     {
         return $this->renderWith(new SvgRenderer(), $options);
     }
 
-    /** Render as raw PNG bytes. */
+    /**
+     * Render as raw PNG bytes
+     * @param array<string, mixed> $options
+     * @return string
+     */
     public function png(array $options = []): string
     {
         return $this->renderWith(new PngRenderer(), $options);
+    }
+
+    /**
+     * Render as a PNG base64 data URI.
+     * @param array<string, mixed> $options
+     * @return string e.g. data:image/svg+xml;base64,...
+     */
+    public function pngBase64(array $options = []): string
+    {
+        return 'data:image/png;base64,' . base64_encode($this->png($options));
+    }
+
+    /**
+     * Render as a SVG base64 data URI.
+     * @param array<string, mixed> $options
+     * @return string e.g. data:image/svg+xml;base64,...
+     */
+    public function svgBase64(array $options = []): string
+    {
+        return 'data:image/svg+xml;base64,' . base64_encode($this->svg($options));
     }
 
     /** Use a custom renderer. */

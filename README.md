@@ -1,6 +1,6 @@
 # Laika Barcode Generator
 
-A lightweight PHP 8.1+ barcode generator library supporting 1D and 2D barcode formats with **SVG and PNG** output, watermarks, and file saving — zero runtime dependencies.
+A lightweight PHP 8.1+ barcode generator library supporting 1D and 2D barcode formats with **SVG and PNG** output, watermarks, title/footer text, and file saving — zero runtime dependencies.
 
 ---
 
@@ -34,14 +34,14 @@ A lightweight PHP 8.1+ barcode generator library supporting 1D and 2D barcode fo
 ## Installation
 
 ```bash
-composer require laika/barcode
+composer require laikait/barcode-generator
 ```
 
 ---
 
 ## 1D Barcodes
 
-### SVG
+### Quick Start
 
 ```php
 use Laika\Barcode\Barcode;
@@ -52,10 +52,18 @@ header('Content-Type: image/svg+xml');
 echo $svg;
 ```
 
+### SVG
+
+```php
+$svg = Barcode::type('ean13')
+    ->data('590123412345')   // 12 digits — check digit auto-computed
+    ->svg();
+```
+
 ### PNG *(requires GD)*
 
 ```php
-$png = Barcode::type('ean13')->data('590123412345')->png();
+$png = Barcode::type('code128')->data('LAIKA-2025')->png();
 
 header('Content-Type: image/png');
 echo $png;
@@ -66,7 +74,6 @@ echo $png;
 Format is inferred from the file extension (`.svg` or `.png`). Directories are created automatically.
 
 ```php
-// Returns the resolved absolute path
 $path = Barcode::type('code128')->data('ABC-123')->save('/var/www/barcodes/label.svg');
 $path = Barcode::type('ean13')->data('590123412345')->save('/var/www/barcodes/product.png');
 ```
@@ -78,39 +85,35 @@ $svg = Barcode::type('ean8')->data('9638507')->svg();
 echo '<div>' . $svg . '</div>';
 ```
 
-### Options
+### Use in HTML TAG
 
-All options can be passed to `->options([...])` (builder-level) or directly to `->svg([...])` / `->png([...])` / `->save($path, [...])`.
+```php
+$svg = Barcode::type('ean8')->data('9638507')->svgBase64();
+$png = Barcode::type('ean8')->data('9638507')->pngBase64();
+echo '<img src="<?= $svg ?>" alt="Base64 SVG Barcode">';
+echo '<img src="<?= $png ?>" alt="Base64 PNG Barcode">';
 
-**SVG options:**
+### Title & Footer
 
-| Option              | Type     | Default     | Description                              |
-|---------------------|----------|-------------|------------------------------------------|
-| `height`            | `int`    | `80`        | Bar height in pixels                     |
-| `module_width`      | `int`    | `2`         | Width of one narrow module (px)          |
-| `margin`            | `int`    | `10`        | Side/top/bottom margin (px)              |
-| `color`             | `string` | `#000000`   | Bar and label colour (hex)               |
-| `bg`                | `string` | `#ffffff`   | Background colour, `''` = transparent    |
-| `show_label`        | `bool`   | `true`      | Print data label below bars              |
-| `font_size`         | `int`    | `12`        | Label font size in px                    |
-| `watermark_text`    | `string` | `''`        | Diagonal overlay text (e.g. `'SAMPLE'`)  |
-| `watermark_color`   | `string` | `#000000`   | Watermark text colour                    |
-| `watermark_opacity` | `float`  | `0.15`      | Opacity 0.0–1.0                          |
-| `watermark_rotate`  | `int`    | `-20`       | Rotation in degrees                      |
-| `watermark_position`| `string` | `'center'`  | `'top'` \| `'center'` \| `'bottom'`     |
-| `watermark_font`    | `int`    | `0`         | Font size in px, `0` = auto              |
+Add a title above and/or footer text below the barcode.
 
-**PNG options** *(same as SVG, with these differences):*
+```php
+$svg = Barcode::type('code128')
+    ->data('HF5H65AP')
+    ->options([
+        'title'        => 'Product Label',
+        'title_color'  => '#003366',
+        'title_align'  => 'center',
+        'footer'       => 'Scan at checkout',
+        'footer_color' => '#666666',
+        'footer_align' => 'right',
+    ])
+    ->svg();
+```
 
-| Option      | Type              | Default           | Description                                         |
-|-------------|-------------------|-------------------|-----------------------------------------------------|
-| `color`     | `string\|int[]`   | `[0, 0, 0]`       | Hex string or `[r, g, b]` array                     |
-| `bg`        | `string\|int[]`   | `[255, 255, 255]` | Hex string, `[r, g, b]` array, or `null` = transparent |
-| `font_size` | `int`             | `3`               | GD built-in font (1–5)                              |
+### Watermark
 
-### 1D Watermark
-
-The watermark is a semi-transparent diagonal text drawn over the bars — decorative only. Keep `watermark_opacity` ≤ `0.20` to avoid interfering with scanning.
+A semi-transparent diagonal text drawn over the bars — decorative only. Keep `watermark_opacity` ≤ `0.20` to avoid affecting scannability.
 
 ```php
 $svg = Barcode::type('code128')
@@ -125,20 +128,62 @@ $svg = Barcode::type('code128')
     ->svg();
 ```
 
+### All Options
+
+All options can be passed to `->options([...])` (builder-level) or directly to `->svg([...])` / `->png([...])` / `->save($path, [...])`.
+
+**Base:**
+
+| Option         | Type     | Default     | Description                              |
+|----------------|----------|-------------|------------------------------------------|
+| `height`       | `int`    | `80`        | Bar height in pixels                     |
+| `module_width` | `int`    | `2`         | Width of one narrow module (px)          |
+| `margin`       | `int`    | `10`        | Side/top/bottom margin (px)              |
+| `color`        | `string` | `#000000`   | Bar and label colour (hex)               |
+| `bg`           | `string` | `#ffffff`   | Background colour, `''` = transparent    |
+| `show_label`   | `bool`   | `true`      | Print data label below bars              |
+| `font_size`    | `int`    | `12`        | Data label font size in px (SVG) / GD font 1–5 (PNG) |
+
+**Title & footer:**
+
+| Option         | Type     | Default          | Description                           |
+|----------------|----------|------------------|---------------------------------------|
+| `title`        | `string` | `''`             | Text printed above the barcode        |
+| `title_size`   | `int`    | `0` (auto)       | Font size in px                       |
+| `title_color`  | `string` | same as `color`  | Title text colour                     |
+| `title_align`  | `string` | `'center'`       | `'left'` \| `'center'` \| `'right'`  |
+| `footer`       | `string` | `''`             | Text printed below the barcode        |
+| `footer_size`  | `int`    | `0` (auto)       | Font size in px                       |
+| `footer_color` | `string` | same as `color`  | Footer text colour                    |
+| `footer_align` | `string` | `'center'`       | `'left'` \| `'center'` \| `'right'`  |
+
+**Watermark:**
+
+| Option               | Type     | Default     | Description                              |
+|----------------------|----------|-------------|------------------------------------------|
+| `watermark_text`     | `string` | `''`        | Diagonal overlay text (e.g. `'SAMPLE'`)  |
+| `watermark_color`    | `string` | `#000000`   | Watermark text colour                    |
+| `watermark_opacity`  | `float`  | `0.15`      | Opacity 0.0–1.0                          |
+| `watermark_rotate`   | `int`    | `-20`       | Rotation in degrees                      |
+| `watermark_position` | `string` | `'center'`  | `'top'` \| `'center'` \| `'bottom'`     |
+| `watermark_font`     | `int`    | `0`         | Font size in px, `0` = auto              |
+
+> **PNG note:** `color` and `bg` also accept `[r, g, b]` arrays. `bg` can be `null` for transparency. `font_size` uses GD built-in fonts (1–5).
+
 ---
 
 ## QR Code
 
 ### EC Levels
 
-| Level | Recovery | Default | Best For                         |
-|-------|----------|---------|----------------------------------|
-| `L`   | ~7%      |         | Clean print environments         |
-| `M`   | ~15%     |         | General use                      |
-| `Q`   | ~25%     |         | Printed labels                   |
+| Level | Recovery | Default | Best For                          |
+|-------|----------|---------|-----------------------------------|
+| `L`   | ~7%      |         | Clean print environments          |
+| `M`   | ~15%     |         | General use                       |
+| `Q`   | ~25%     |         | Printed labels                    |
 | `H`   | ~30%     | ✓       | Watermarks / damaged environments |
 
-> **`H` is the default.** It provides the most error recovery and is required when using a center watermark.
+> **`H` is the default.** Required when using a center watermark.
 
 ### SVG
 
@@ -146,9 +191,6 @@ $svg = Barcode::type('code128')
 use Laika\Barcode\QrCode;
 
 $svg = QrCode::data('https://example.com')->svg();
-
-header('Content-Type: image/svg+xml');
-echo $svg;
 ```
 
 ### PNG *(requires GD)*
@@ -163,60 +205,61 @@ echo $png;
 ### Save to File
 
 ```php
-// SVG
 $path = QrCode::data('https://example.com')->save('/var/www/qr/code.svg');
-
-// PNG
 $path = QrCode::data('https://example.com')->save('/var/www/qr/code.png');
 ```
 
-### Options
+### Use in HTML TAG
+```php
+$svg = QrCode::type('ean8')->data('9638507')->svgBase64();
+$png = QrCode::type('ean8')->data('9638507')->pngBase64();
+echo '<img src="<?= $svg ?>" alt="Base64 SVG QrCode">';
+echo '<img src="<?= $png ?>" alt="Base64 PNG QrCode">';
+```
 
-| Option        | Type     | Default     | Description                                     |
-|---------------|----------|-------------|-------------------------------------------------|
-| `module_size` | `int`    | `8`         | Pixels per module                               |
-| `margin`      | `int`    | `4`         | Quiet-zone modules (minimum 4 per QR spec)      |
-| `color`       | `string` | `#000000`   | Dark module colour (hex)                        |
-| `bg`          | `string` | `#ffffff`   | Background colour, `''` = transparent           |
+### Title & Footer
 
 ```php
-$svg = QrCode::data('Hello, World!')
-    ->ec('Q')
+// SVG
+$svg = QrCode::data('https://laika.dev')
     ->options([
-        'module_size' => 10,
-        'color'       => '#1a1a2e',
-        'bg'          => '#f0f4ff',
+        'title'        => 'Scan to visit',
+        'title_color'  => '#003366',
+        'footer'       => 'laika.dev — PHP Framework',
+        'footer_color' => '#999999',
+        'footer_align' => 'center',
     ])
     ->svg();
+
+// PNG
+$png = QrCode::data('https://laika.dev')
+    ->options([
+        'title'  => 'Scan to visit',
+        'footer' => 'laika.dev',
+    ])
+    ->png();
 ```
 
 ### Center Watermark
 
-QR codes support a center watermark (text or image/logo) because error-correction redundancy compensates for the obscured modules. Always use **EC=H** (enforced automatically by the watermark helpers).
+QR codes support a center watermark (text or image/logo). Error-correction redundancy compensates for the obscured modules. Always uses **EC=H** (enforced automatically).
 
-> Keep `watermark_size` ≤ `0.22` to stay safely within the 30% recovery budget and avoid clipping the finder patterns.
+> Keep `watermark_size` ≤ `0.22` to avoid clipping the finder patterns.
 
 **Text watermark:**
 
 ```php
-// SVG
-$svg = QrCode::data('HG6GH5H33')
+$svg = QrCode::data('https://laika.dev')
     ->watermarkText('LAIKA')
     ->svg();
 
-// PNG
-$png = QrCode::data('HG6GH5H33')
-    ->watermarkText('LAIKA')
-    ->png();
-
 // Styled
-$svg = QrCode::data('HG6GH5H33')
+$svg = QrCode::data('https://laika.dev')
     ->watermarkText('★', [
         'watermark_size'   => 0.20,
         'watermark_bg'     => '#1a1a2e',
         'watermark_color'  => '#ffffff',
         'watermark_radius' => 50,
-        'watermark_font'   => 28,
     ])
     ->svg();
 ```
@@ -225,38 +268,71 @@ $svg = QrCode::data('HG6GH5H33')
 
 ```php
 // From file path
-$svg = QrCode::data('HG6GH5H33')
+$png = QrCode::data('https://laika.dev')
     ->watermarkImage('/path/to/logo.png')
-    ->svg();
+    ->png();
 
 // From base64 data URI
-$svg = QrCode::data('HG6GH5H33')
+$svg = QrCode::data('https://laika.dev')
     ->watermarkImage('data:image/png;base64,...')
     ->svg();
+```
 
-// PNG output with logo
-$png = QrCode::data('HG6GH5H33')
-    ->watermarkImage('/path/to/logo.png')
+**Combining title, footer and watermark:**
+
+```php
+$png = QrCode::data('HF5H65AP')
+    ->watermarkText('LAIKA')
+    ->options([
+        'title'        => 'Serial Number',
+        'title_color'  => '#003366',
+        'footer'       => 'HF5H65AP — laika.dev',
+        'footer_color' => '#666666',
+    ])
     ->png();
 ```
 
-**Watermark options:**
+### All QR Options
 
-| Option              | Type     | Default     | Description                                        |
-|---------------------|----------|-------------|----------------------------------------------------|
-| `watermark_text`    | `string` | `''`        | Text to display in the center box                  |
-| `watermark_image`   | `string` | `''`        | File path or `data:image/...;base64,...` URI        |
-| `watermark_size`    | `float`  | `0.20`      | Fraction of QR canvas size (max `0.22` recommended)|
-| `watermark_bg`      | `string` | `#ffffff`   | Background box colour                              |
-| `watermark_color`   | `string` | `#000000`   | Text colour                                        |
-| `watermark_font`    | `int`    | `0`         | Font size in px, `0` = auto-fit                    |
-| `watermark_radius`  | `int`    | `4`         | Corner radius of background box (SVG only)         |
-| `watermark_padding` | `int`    | `6`         | Padding inside background box in px                |
+**Base:**
+
+| Option        | Type     | Default     | Description                                     |
+|---------------|----------|-------------|-------------------------------------------------|
+| `module_size` | `int`    | `8`         | Pixels per module                               |
+| `margin`      | `int`    | `4`         | Quiet-zone modules (minimum 4 per QR spec)      |
+| `color`       | `string` | `#000000`   | Dark module colour (hex)                        |
+| `bg`          | `string` | `#ffffff`   | Background colour, `''` = transparent           |
+
+**Title & footer:**
+
+| Option         | Type     | Default         | Description                           |
+|----------------|----------|-----------------|---------------------------------------|
+| `title`        | `string` | `''`            | Text printed above the QR code        |
+| `title_size`   | `int`    | `0` (auto)      | Font size in px                       |
+| `title_color`  | `string` | same as `color` | Title text colour                     |
+| `title_align`  | `string` | `'center'`      | `'left'` \| `'center'` \| `'right'`  |
+| `footer`       | `string` | `''`            | Text printed below the QR code        |
+| `footer_size`  | `int`    | `0` (auto)      | Font size in px                       |
+| `footer_color` | `string` | same as `color` | Footer text colour                    |
+| `footer_align` | `string` | `'center'`      | `'left'` \| `'center'` \| `'right'`  |
+
+**Center watermark:**
+
+| Option              | Type     | Default     | Description                                         |
+|---------------------|----------|-------------|-----------------------------------------------------|
+| `watermark_text`    | `string` | `''`        | Text in the center box                              |
+| `watermark_image`   | `string` | `''`        | File path or `data:image/...;base64,...` URI         |
+| `watermark_size`    | `float`  | `0.20`      | Fraction of QR canvas size (max `0.22` recommended) |
+| `watermark_bg`      | `string` | `#ffffff`   | Background box colour                               |
+| `watermark_color`   | `string` | `#000000`   | Text colour                                         |
+| `watermark_font`    | `int`    | `0`         | Font size in px, `0` = auto-fit                     |
+| `watermark_radius`  | `int`    | `4`         | Corner radius of box (SVG only)                     |
+| `watermark_padding` | `int`    | `6`         | Padding inside box in px                            |
 
 ### Raw Matrix
 
 ```php
-// Returns bool[][] — true = dark module, false = light
+// Returns bool[][] — true = dark module
 $matrix = QrCode::data('test')->matrix();
 
 foreach ($matrix as $row => $cols) {
@@ -302,8 +378,7 @@ class HtmlRenderer implements RendererInterface
             $color = $bar['bar'] ? '#000' : 'transparent';
             $html .= sprintf(
                 '<div style="width:%dpx;height:80px;background:%s;"></div>',
-                $bar['width'] * 2,
-                $color
+                $bar['width'] * 2, $color
             );
         }
         return $html . '</div><p>' . htmlspecialchars($label) . '</p>';
@@ -328,4 +403,4 @@ composer install
 
 ## License
 
-MIT © Laika IT
+MIT © Laika
