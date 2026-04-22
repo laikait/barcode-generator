@@ -1,19 +1,24 @@
 <?php
+/**
+ * Laika Barcode/QR Code Generator
+ * Author: Showket Ahmed
+ * Email: strblackhawk@gmail.com
+ */
 
 declare(strict_types=1);
 
 namespace Laika\Barcode;
 
-use Laika\Barcode\Contracts\BarcodeInterface;
-use Laika\Barcode\Contracts\RendererInterface;
+use Laika\Barcode\Interfaces\RendererInterface;
+use Laika\Barcode\Interfaces\BarcodeInterface;
+use Laika\Barcode\Exceptions\BarcodeException;
 use Laika\Barcode\Encoders\Code128Encoder;
 use Laika\Barcode\Encoders\Code39Encoder;
 use Laika\Barcode\Encoders\Ean13Encoder;
-use Laika\Barcode\Encoders\Ean8Encoder;
-use Laika\Barcode\Encoders\UpcaEncoder;
-use Laika\Barcode\Exceptions\BarcodeException;
 use Laika\Barcode\Renderers\PngRenderer;
 use Laika\Barcode\Renderers\SvgRenderer;
+use Laika\Barcode\Encoders\Ean8Encoder;
+use Laika\Barcode\Encoders\UpcaEncoder;
 
 /**
  * Main entry point for the Laika Barcode library.

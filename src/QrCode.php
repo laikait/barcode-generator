@@ -1,14 +1,19 @@
 <?php
+/**
+ * Laika Barcode/QR Code Generator
+ * Author: Showket Ahmed
+ * Email: strblackhawk@gmail.com
+ */
 
 declare(strict_types=1);
 
 namespace Laika\Barcode;
 
-use Laika\Barcode\Encoders\QrEncoder;
-use Laika\Barcode\Exceptions\BarcodeException;
 use Laika\Barcode\Exceptions\InvalidDataException;
+use Laika\Barcode\Exceptions\BarcodeException;
 use Laika\Barcode\Renderers\QrPngRenderer;
 use Laika\Barcode\Renderers\QrSvgRenderer;
+use Laika\Barcode\Encoders\QrEncoder;
 
 /**
  * Fluent QR Code generator.
