@@ -270,6 +270,33 @@ class BarcodeTest extends TestCase
         }
     }
 
+    public function testQrVersion7HasVersionInfo(): void
+    {
+        // 110 bytes at EC=M → version 7 (45×45). Spec value for v7 is 0x07C94.
+        $m    = QrCode::data(str_repeat('A', 110))->ec('M')->matrix();
+        $size = count($m);
+        $this->assertSame(45, $size);
+
+        $bits = 0;
+        for ($i = 0; $i < 18; $i++) {
+            $top  = $m[intdiv($i, 3)][$size - 11 + $i % 3];
+            $left = $m[$size - 11 + $i % 3][intdiv($i, 3)];
+            $this->assertSame($top, $left, "Version info copies differ at bit $i");
+            $bits |= ($top ? 1 : 0) << $i;
+        }
+        $this->assertSame(0x07C94, $bits);
+    }
+
+    public function testQrVersion7HasAlignmentOnTimingLine(): void
+    {
+        // v7 alignment centres: 6, 22, 38 — the one at (6, 22) sits on the timing row
+        $m = QrCode::data(str_repeat('A', 110))->ec('M')->matrix();
+        $this->assertTrue($m[4][20]);  // top-left corner of the 5×5 pattern
+        $this->assertTrue($m[4][24]);  // top-right corner
+        $this->assertFalse($m[5][21]); // inner light ring
+        $this->assertTrue($m[22][4]);  // transposed pattern at (22, 6)
+    }
+
     public function testQrLargerDataSelectsHigherVersion(): void
     {
         $short  = count(QrCode::data('Hi')->ec('M')->matrix());           // small

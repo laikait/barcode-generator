@@ -320,6 +320,8 @@ final class QrEncoder
         $m[4 * $version + 9][8] = 1;
         // Reserve format-information areas
         $this->reserveFormat($m, $size);
+        // Version information (v7+); independent of mask, so placed once here
+        $this->placeVersionInfo($m, $version, $size);
 
         return $m;
     }
@@ -370,10 +372,13 @@ final class QrEncoder
             return;
         }
 
-        foreach ($coords as $r) {
-            foreach ($coords as $c) {
-                // Skip if centre is already occupied (overlaps finder pattern)
-                if ($m[$r][$c] !== -1) {
+        $last = count($coords) - 1;
+
+        foreach ($coords as $i => $r) {
+            foreach ($coords as $j => $c) {
+                // Skip the three corners that overlap finder patterns. Checking the
+                // centre cell is not enough: on v7+ some centres lie on timing lines.
+                if (($i === 0 && $j === 0) || ($i === 0 && $j === $last) || ($i === $last && $j === 0)) {
                     continue;
                 }
 
@@ -414,6 +419,33 @@ final class QrEncoder
             if ($m[$i][8] === -1) {
                 $m[$i][8] = 0;
             }
+        }
+    }
+
+    /**
+     * Place the two 6×3 version-information blocks (versions 7+ only).
+     *
+     * Uses BCH(18,6) with generator G(x) = x^12+x^11+x^10+x^9+x^8+x^5+x^2+1.
+     * Bit i goes to (row i/3, col size-11+i%3) and its transpose.
+     */
+    private function placeVersionInfo(array &$m, int $version, int $size): void
+    {
+        if ($version < 7) {
+            return;
+        }
+
+        $rem = $version;
+        for ($i = 0; $i < 12; $i++) {
+            $rem = ($rem << 1) ^ (($rem >> 11) * 0x1F25);
+        }
+        $bits = ($version << 12) | $rem;
+
+        for ($i = 0; $i < 18; $i++) {
+            $bit = ($bits >> $i) & 1;
+            $a   = $size - 11 + $i % 3;
+            $b   = intdiv($i, 3);
+            $m[$b][$a] = $bit; // near top-right finder
+            $m[$a][$b] = $bit; // near bottom-left finder
         }
     }
 
